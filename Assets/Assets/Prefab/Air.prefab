@@ -1,0 +1,104 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &1477153705131946348
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 49fae91d5144a429d99ee799a5cef726, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.5929868
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49fae91d5144a429d99ee799a5cef726, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.34235165
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49fae91d5144a429d99ee799a5cef726, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.85795593
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49fae91d5144a429d99ee799a5cef726, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071067
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49fae91d5144a429d99ee799a5cef726, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49fae91d5144a429d99ee799a5cef726, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49fae91d5144a429d99ee799a5cef726, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49fae91d5144a429d99ee799a5cef726, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49fae91d5144a429d99ee799a5cef726, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 49fae91d5144a429d99ee799a5cef726, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 49fae91d5144a429d99ee799a5cef726, type: 3}
+      propertyPath: m_Name
+      value: exterior_aircon_unit_4k
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49fae91d5144a429d99ee799a5cef726, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4100092210743231568}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 49fae91d5144a429d99ee799a5cef726, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2593858351917164529}
+  m_SourcePrefab: {fileID: 100100000, guid: 49fae91d5144a429d99ee799a5cef726, type: 3}
+--- !u!1 &1783019346453826621 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 49fae91d5144a429d99ee799a5cef726, type: 3}
+  m_PrefabInstance: {fileID: 1477153705131946348}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &4100092210743231568
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1783019346453826621}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 7843634584358152017, guid: 49fae91d5144a429d99ee799a5cef726, type: 3}
+--- !u!114 &2593858351917164529
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1783019346453826621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8307dcf5e8a4481f89b6e870e0bb78b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SavePositionToJson
