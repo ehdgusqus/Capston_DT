@@ -1,51 +1,43 @@
 using UnityEngine;
 using UnityEngine.Networking;
 using System.Collections;
-using System.Collections.Generic;
 using Newtonsoft.Json.Linq; 
 
 public class SpatialDigitalTwin : MonoBehaviour
 {
     [Header("Server Connection")]
-    public string serverIp = "192.168.100.1"; // ASUS 노트북 IP
+    public string serverIp = "192.168.100.1"; 
     public string port = "8000";
     
+    [Header("Movement Constraints")]
+    public bool useConstraints = true;
+    public Vector2 minBounds = new Vector2(-10f, -10f); // 맵의 최소 X, Z
+    public Vector2 maxBounds = new Vector2(10f, 10f);   // 맵의 최대 X, Z
+
     [Header("Sync Settings")]
-    public float lerpSpeed = 15f;           // 위치/회전이 따라오는 부드러운 정도
-    public float rotationSensitivity = 15f; // MPU9250 가속도 값에 대한 회전 민감도
+    public float lerpSpeed = 15f;
+    public float rotationSensitivity = 15f;
 
     private string syncUrl;
 
     void Start() {
-        // 서버 API 주소 설정
         syncUrl = $"http://{serverIp}:{port}/api/sync";
-        Debug.Log($"<color=cyan>[SYSTEM]</color> API Sync URL: {syncUrl}");
-        
-        // 실시간 통신 루프 시작
         StartCoroutine(SyncLoop());
     }
 
-    // 서버와 지속적으로 통신하는 코루틴
     IEnumerator SyncLoop() {
         while (true) {
             using (UnityWebRequest request = UnityWebRequest.Get(syncUrl)) {
                 yield return request.SendWebRequest();
-
                 if (request.result == UnityWebRequest.Result.Success) {
                     UpdateUnityScene(request.downloadHandler.text);
-                } else {
-                    Debug.LogWarning($"<color=red>[ERROR]</color> Connection Failed: {request.error}");
                 }
             }
-            // 0.05초 대기 (초당 20번 업데이트 = 20Hz)
-            yield return new WaitForSeconds(0.05f); 
+            yield return new WaitForSeconds(0.05f); // 20Hz 동기화
         }
     }
 
     void UpdateUnityScene(string json) {
-        // [원본 로그] 서버에서 오는 전체 JSON 데이터를 보고 싶을 때 활성화
-        Debug.Log("<color=grey>[JSON FULL]</color> " + json);
-
         try {
             JObject data = JObject.Parse(json);
             JObject mappings = data["mappings"] as JObject;
@@ -58,54 +50,62 @@ public class SpatialDigitalTwin : MonoBehaviour
             foreach (var mapping in mappings) {
                 string tagId = mapping.Key;
                 int assetIndex = (int)mapping.Value;
-
-                // 1. 매핑된 에셋 정보 확인
-                if (assetIndex >= assets.Count) continue;
                 string targetName = (string)assets[assetIndex]["name"];
                 GameObject targetObj = GameObject.Find(targetName);
 
                 if (targetObj != null && tags.ContainsKey(tagId)) {
-                    // 2. 실시간 데이터 추출 (좌표 및 버튼 상태)
+                    // [데이터 추출]
                     bool isDragging = draggingStates.ContainsKey(tagId) ? (bool)draggingStates[tagId] : false;
                     float tagX = (float)tags[tagId]["x"];
                     float tagZ = (float)tags[tagId]["z"];
-                    Vector3 realWorldPos = new Vector3(tagX, targetObj.transform.position.y, tagZ);
 
-                    // [디버그 로그] 버튼 상태에 따라 색상 변경 (노랑=이동중, 하양=대기중)
+                    // --- 단계 1: 범위 제한 (Map Constraints) ---
+                    if (useConstraints) {
+                        tagX = Mathf.Clamp(tagX, minBounds.x, maxBounds.x);
+                        tagZ = Mathf.Clamp(tagZ, minBounds.y, maxBounds.y);
+                    }
+
+                    Vector3 targetPos = new Vector3(tagX, targetObj.transform.position.y, tagZ);
+
+                    // --- 단계 2: 디버그 로그 출력 ---
                     string logColor = isDragging ? "yellow" : "white";
                     Debug.Log($"<color={logColor}>[GPS] {tagId} -> {targetName} | X:{tagX:F2}, Z:{tagZ:F2} | Drag:{isDragging}</color>");
 
-                    // 3. 캐릭터 애니메이션 컴포넌트(HardwareTagFollower) 확인
                     HardwareTagFollower follower = targetObj.GetComponent<HardwareTagFollower>();
 
-                    // 4. 버튼 상태(isDragging)에 따른 인터랙션 처리
+                    // --- 단계 3: 물리적 이동 및 애니메이션 처리 ---
                     if (isDragging) {
-                        // --- [이동 로직] ---
                         if (follower != null) {
-                            // 캐릭터일 경우: 애니메이션 컨트롤러에 좌표 전달 (걸어감)
-                            follower.UpdateHardwarePosition(realWorldPos);
+                            // 벽 뚫기 방지 로직이 포함된 Follower 스크립트 실행
+                            follower.UpdateHardwarePosition(targetPos);
                         } else {
-                            // 일반 물체일 경우: 직접 Lerp 이동
-                            targetObj.transform.position = Vector3.Lerp(targetObj.transform.position, realWorldPos, Time.deltaTime * lerpSpeed);
+                            // 일반 물체: Raycast로 벽 체크 후 이동 (간이 물리)
+                            MoveWithCollisionCheck(targetObj, targetPos);
                         }
 
-                        // --- [MPU9250 회전 로직] ---
+                        // MPU 회전 적용
                         float ax = (float)tags[tagId]["ax"];
                         float az = (float)tags[tagId]["az"];
-                        // 가속도 센서 값을 회전 각도로 변환
                         Quaternion targetRotation = Quaternion.Euler(ax * rotationSensitivity, 0, az * rotationSensitivity);
                         targetObj.transform.rotation = Quaternion.Lerp(targetObj.transform.rotation, targetRotation, Time.deltaTime * lerpSpeed);
                     }
-                    else {
-                        // 버튼을 떼면 캐릭터의 목표 위치를 현재 위치로 세팅하여 '정지 애니메이션' 유도
-                        if (follower != null) {
-                            follower.UpdateHardwarePosition(targetObj.transform.position);
-                        }
+                    else if (follower != null) {
+                        // 드래그 중이 아닐 때 애니메이션 정지
+                        follower.UpdateHardwarePosition(targetObj.transform.position);
                     }
                 }
             }
-        } catch (System.Exception e) {
-            // 초기 매핑 전 데이터 부재로 인한 에러 방지
+        } catch { }
+    }
+
+    // 간단한 물리 체크: 이동 방향에 장애물이 있으면 멈춤
+    void MoveWithCollisionCheck(GameObject obj, Vector3 target) {
+        Vector3 direction = (target - obj.transform.position).normalized;
+        float checkDistance = 0.5f; // 장애물 감지 거리
+
+        // Raycast를 쏴서 장애물이 없을 때만 이동
+        if (!Physics.Raycast(obj.transform.position + Vector3.up * 0.5f, direction, checkDistance)) {
+            obj.transform.position = Vector3.Lerp(obj.transform.position, target, Time.deltaTime * lerpSpeed);
         }
     }
 }
