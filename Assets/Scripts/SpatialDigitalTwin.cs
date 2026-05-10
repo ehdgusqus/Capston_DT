@@ -11,8 +11,8 @@ public class SpatialDigitalTwin : MonoBehaviour
     
     [Header("Movement Constraints")]
     public bool useConstraints = true;
-    public Vector2 minBounds = new Vector2(-10f, -10f); // 맵의 최소 X, Z
-    public Vector2 maxBounds = new Vector2(10f, 10f);   // 맵의 최대 X, Z
+    public Vector2 minBounds = new Vector2(-15f, -10f); // 맵의 최소 X, Z
+    public Vector2 maxBounds = new Vector2(15f, 10f);   // 맵의 최대 X, Z
 
     [Header("Sync Settings")]
     public float lerpSpeed = 15f;
